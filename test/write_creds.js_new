@@ -27,7 +27,7 @@ writeCredsArray = [
 	// console.info(msg);
 	//
 	// copied user_coll.find up from lookupUserKeys below
-	//
+
         user_coll = reader_db.collection('user');
         user_coll.find({email : TU_EMAIL_REGEX}).toArray(function(err, users) {
             users_array = users;
@@ -45,15 +45,18 @@ writeCredsArray = [
     function lookupUserKeys(callback) {
         console.log("lookupUserKeys");
         user_coll = reader_db.collection('user');
+	console.log('in write_creds.js user_coll.find email' );
         user_coll.find({email : TU_EMAIL_REGEX}).toArray(function(err, users) {
             users_array = users;
 	//
 	// bjb - debug - april 28, 2017
 	//
 	    console.info(users_array);
+	    console.log('in write_creds.js user_coll.find email loop through users_array' );
             callback(null);
         });
     },
+
     function getUserTokens(callback) {
         console.log("getUserTokens");
         var numTokens = 0;
@@ -71,27 +74,39 @@ writeCredsArray = [
                     'Content-Length': Buffer.byteLength(postData)
                 }
             };
+	    console.log("in write_creds.js getUserTokens request options", options );
             
             var req = http.request(options, function(res) {
                 var responseString = '';
 
-                res.setEncoding('utf8');
-                if (res.statusCode != 200) {
-                    throw new Error("Error with oauth token, status code " + res.statusCode);
-                }
+	        //
+	        // bjb - debug - may 4, 2017
+    	        //
 
-                res.on('data', function (chunk) {
-                    responseString += chunk;
-                });
+                console.log("getUserTokens - about to res.setEncoding ");
+	        // console.info(req);
 
-                res.on('end', function() {
-                    var responseObject = JSON.parse(responseString);
-                    user.token = responseObject;
-                    numTokens++;
-                    if (numTokens == users_array.length) {
-                        callback(null);
-                    }
-                });
+		console.log("getUserTokens - about to call res.setEncoding ");
+		// res.setHeader('Content-Type', 'application/json');
+		res.statusCode = 200;
+                // res.contentType('application/json');
+		// res.setEncoding('utf8');
+                // if (res.statusCode != 200) {
+                //    throw new Error("Error with oauth token, status code " + res.statusCode);
+                // }
+
+                // res.on('data', function (chunk) {
+                //  responseString += chunk;
+                // });
+
+                // res.on('end', function() {
+                //    var responseObject = JSON.parse(responseString);
+                //    user.token = responseObject;
+                //    numTokens++;
+                //    if (numTokens == users_array.length) {
+                //        callback(null);
+                //    }
+                // });
 
             });
             req.write(postData);
